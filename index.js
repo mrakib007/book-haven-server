@@ -47,6 +47,13 @@ client.connect(err => {
     })
   })
 
+  app.get('/deals',(req,res)=>{
+    ordersCollection.find({email: req.query.email})
+    .toArray((err,documents)=>{
+      res.send(documents);
+    })
+  })
+
   app.post('/addBook',(req,res)=>{
     const newBook = req.body;
     console.log('adding new book',newBook);
@@ -64,6 +71,8 @@ client.connect(err => {
       res.send(result.insertedCount>0);
     })
   })
+
+
 
   app.delete('/delete/:id',(req,res)=>{
     console.log(req.params.id);
