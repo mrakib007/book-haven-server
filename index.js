@@ -11,7 +11,9 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const port = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(express.json());
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -20,7 +22,7 @@ app.get('/', (req, res) => {
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const booksCollection = client.db("bookHaven").collection("books");
-  // const orderCollection = client.db("bookHaven").collection("orders");
+  const ordersCollection = client.db("bookHaven").collection("orders");
 
   app.get('/books',(req,res)=>{
     booksCollection.find()
@@ -29,8 +31,17 @@ client.connect(err => {
     })
   })
 
-  app.get('/orders',(req,res)=>{
-    booksCollection.find()
+  app.get('/book/:id',(req,res)=>{
+    console.log(req.params.id,'this is book');
+    booksCollection.find({_id:ObjectId(req.params.id)})
+    .toArray((err,items)=>{
+      res.send(items);
+    })
+  })
+
+
+  app.get('/order',(req,res)=>{
+    ordersCollection.find()
     .toArray((err,items)=>{
       res.send(items);
     })
@@ -42,6 +53,14 @@ client.connect(err => {
     booksCollection.insertOne(newBook)
     .then(result =>{
       console.log(result.insertedCount,'added');
+      res.send(result.insertedCount>0);
+    })
+  })
+
+  app.post('/addOrder',(req,res)=>{
+    const newOrder = req.body;
+    ordersCollection.insertOne(newOrder)
+    .then(result =>{
       res.send(result.insertedCount>0);
     })
   })
